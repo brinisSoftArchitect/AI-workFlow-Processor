@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Elements
   const projectNameInput = document.getElementById('projectName');
   const saveProjectBtn = document.getElementById('saveProjectBtn');
+  const openProjectBtn = document.getElementById('openProjectBtn');
   const promptArea = document.getElementById('promptArea');
   const resultArea = document.getElementById('resultArea');
   const errorArea = document.getElementById('errorArea');
@@ -52,7 +53,33 @@ document.addEventListener('DOMContentLoaded', function() {
       showStatus('Error saving project. Please check the console for details.', 'error');
     }
   });
-
+  openProjectBtn.addEventListener('click', async function() {
+    const projectName = projectNameInput.value.trim();
+    if (!projectName) {
+      showStatus('Please enter a project name', 'error');
+      return;
+    }
+  
+    try {
+      const response = await fetch('/api/open-project', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ projectName })
+      });
+  
+      const data = await response.json();
+      if (data.success) {
+        showStatus(`Project "${projectName}" opened in file explorer`, 'success');
+      } else {
+        showStatus(data.message || 'Failed to open project', 'error');
+      }
+    } catch (error) {
+      console.error('Error opening project:', error);
+      showStatus('Error opening project. Please check the console for details.', 'error');
+    }
+  });
   // Load template functionality
   loadTemplateBtn.addEventListener('click', async function() {
     try {
