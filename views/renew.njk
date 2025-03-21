@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Renew License</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .renewal-container {
+      background-color: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      width: 500px;
+      text-align: center;
+    }
+    h1 {
+      margin-top: 0;
+      color: #333;
+    }
+    .license-key {
+      font-family: monospace;
+      font-size: 16px;
+      padding: 10px;
+      background-color: #f0f0f0;
+      border: 1px dashed #999;
+      border-radius: 4px;
+      margin: 20px 0;
+      word-break: break-all;
+    }
+    .plans {
+      display: flex;
+      justify-content: space-between;
+      margin: 30px 0;
+    }
+    .plan {
+      flex: 1;
+      margin: 0 10px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .plan:hover {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .plan.selected {
+      border-color: #4CAF50;
+      background-color: #e8f5e9;
+    }
+    .plan h3 {
+      margin-top: 0;
+      color: #333;
+    }
+    .plan .price {
+      font-size: 24px;
+      font-weight: bold;
+      color: #4CAF50;
+      margin: 10px 0;
+    }
+    .plan .duration {
+      color: #777;
+      margin-bottom: 10px;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      width: 100%;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .error {
+      color: #f44336;
+      margin: 10px 0;
+      display: none;
+    }
+    .success {
+      color: #4CAF50;
+      margin: 10px 0;
+      padding: 10px;
+      background-color: #e8f5e9;
+      border-radius: 4px;
+      border-left: 4px solid #4CAF50;
+      display: none;
+    }
+    .payment-info {
+      border: 1px solid #ddd;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+      text-align: left;
+    }
+    .payment-info h3 {
+      margin-top: 0;
+      color: #333;
+    }
+    .back-button {
+      display: inline-block;
+      margin-top: 20px;
+      color: #2196F3;
+      text-decoration: none;
+    }
+    .back-button:hover {
+      text-decoration: underline;
+    }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Demo functionality for plan selection
+      const plans = document.querySelectorAll('.plan');
+      plans.forEach(plan => {
+        plan.addEventListener('click', function() {
+          plans.forEach(p => p.classList.remove('selected'));
+          this.classList.add('selected');
+        });
+      });
+
+      // Handle renewal process
+      const renewForm = document.getElementById('renewForm');
+      if (renewForm) {
+        renewForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          
+          const licenseKey = document.getElementById('licenseKey').value;
+          const formData = { licenseKey };
+          
+          // Update UI to show processing
+          document.getElementById('renewBtn').disabled = true;
+          document.getElementById('renewBtn').textContent = 'Processing...';
+          
+          // Submit using AJAX
+          fetch('/api/renew', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              // Show success message
+              const successDiv = document.getElementById('successMessage');
+              successDiv.textContent = data.message;
+              successDiv.style.display = 'block';
+              
+              // Hide form and show success content
+              document.querySelector('.renewal-content').style.display = 'none';
+              document.getElementById('successContent').style.display = 'block';
+              
+              // Redirect after delay
+              setTimeout(function() {
+                window.location.href = data.redirectUrl || '/dashboard';
+              }, 3000);
+            } else {
+              // Show error message
+              const errorDiv = document.getElementById('errorMessage');
+              errorDiv.textContent = data.message || 'Renewal failed';
+              errorDiv.style.display = 'block';
+              
+              // Reset button
+              document.getElementById('renewBtn').disabled = false;
+              document.getElementById('renewBtn').textContent = 'Renew Now';
+            }
+          })
+          .catch(error => {
+            console.error('Error renewing license:', error);
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = 'Server error during renewal';
+            errorDiv.style.display = 'block';
+            
+            // Reset button
+            document.getElementById('renewBtn').disabled = false;
+            document.getElementById('renewBtn').textContent = 'Renew Now';
+          });
+        });
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="renewal-container">
+    <div class="renewal-content">
+      <h1>Renew Your License</h1>
+      <p>Your license has expired or is about to expire. Renew now to continue using all features.</p>
+      
+      <div class="license-key" id="licenseKey">{{ licenseKey }}</div>
+      
+      <div class="plans">
+        <div class="plan selected">
+          <h3>Standard</h3>
+          <div class="price">$49</div>
+          <div class="duration">1 year</div>
+          <p>Standard features<br>Email support</p>
+        </div>
+        <div class="plan">
+          <h3>Professional</h3>
+          <div class="price">$89</div>
+          <div class="duration">1 year</div>
+          <p>Advanced features<br>Priority support</p>
+        </div>
+      </div>
+      
+      <div class="payment-info">
+        <h3>Payment Information</h3>
+        <p><strong>Note:</strong> This is a demo. In a real application, you would integrate payment processing here.</p>
+      </div>
+      
+      <div id="errorMessage" class="error"></div>
+      
+      <form id="renewForm">
+        <input type="hidden" id="licenseKey" name="licenseKey" value="{{ licenseKey }}

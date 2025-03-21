@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register Generator App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .registration-container {
+      background-color: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      width: 400px;
+      text-align: center;
+    }
+    h1 {
+      margin-top: 0;
+      color: #333;
+    }
+    form {
+      margin-top: 20px;
+    }
+    .input-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      text-align: left;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      width: 100%;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .error {
+      color: #f44336;
+      margin-bottom: 20px;
+    }
+    .success {
+      color: #4CAF50;
+      margin-bottom: 20px;
+      padding: 10px;
+      background-color: #e8f5e9;
+      border-radius: 4px;
+      border-left: 4px solid #4CAF50;
+    }
+    .pending {
+      color: #ff9800;
+      margin-bottom: 20px;
+      padding: 10px;
+      background-color: #fff3e0;
+      border-radius: 4px;
+      border-left: 4px solid #ff9800;
+    }
+    .logo {
+      margin-bottom: 20px;
+    }
+    .logo img {
+      max-width: 100px;
+    }
+    .powered-by {
+      margin-top: 20px;
+      color: #999;
+      font-size: 12px;
+    }
+    .license-key {
+      font-family: monospace;
+      font-size: 16px;
+      padding: 10px;
+      background-color: #f0f0f0;
+      border: 1px dashed #999;
+      border-radius: 4px;
+      margin: 10px 0;
+      word-break: break-all;
+    }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const registerForm = document.getElementById('registerForm');
+      if (registerForm) {
+        registerForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          
+          const firstName = document.getElementById('firstName').value;
+          const lastName = document.getElementById('lastName').value;
+          const email = document.getElementById('email').value;
+          const formData = { firstName, lastName, email };
+          
+          // Submit using AJAX to prevent page refresh
+          fetch('/api/register', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              // Show success message
+              const formContainer = document.querySelector('.registration-container');
+              const formContent = formContainer.innerHTML;
+              
+              let successHtml = `
+                <div class="logo">
+                  <h2>Generator App</h2>
+                </div>
+                <h1>Registration Successful</h1>
+                <div class="success">
+                  <p><strong>${data.message}</strong></p>`;
+              
+              // Add license key if provided
+              if (data.licenseKey) {
+                successHtml += `
+                  <p>Your license key:</p>
+                  <div class="license-key">${data.licenseKey}</div>
+                  <p>Please save this key for your records.</p>`;
+              }
+              
+              successHtml += `
+                  <p>You will be redirected to the main page in a few seconds...</p>
+                </div>
+                <div class="powered-by">
+                  Powered by Your Company Name
+                </div>`;
+              
+              // Replace form with success message
+              formContainer.innerHTML = successHtml;
+              
+              // Redirect to main page after delay
+              setTimeout(function() {
+                window.location.href = data.redirectUrl || '/';
+              }, 3000);
+            } else {
+              // Show error message
+              const errorDiv = document.getElementById('registrationError');
+              errorDiv.textContent = data.message || 'Registration failed';
+              errorDiv.style.display = 'block';
+            }
+          })
+          .catch(error => {
+            console.error('Error registering:', error);
+            const errorDiv = document.getElementById('registrationError');
+            errorDiv.textContent = 'Server error during registration';
+            errorDiv.style.display = 'block';
+          });
+        });
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="registration-container">
+    <div class="logo">
+      <h2>Generator App</h2>
+    </div>
+    <h1>Product Registration</h1>
+    
+    {% if success %}
+    <div class="success">
+      <p><strong>{{ message }}</strong></p>
+      {% if licenseKey %}
+      <p>Your license key:</p>
+      <div class="license-key">{{ licenseKey }}</div>
+      <p>Please save this key for your records.</p>
+      {% endif %}
+      <p>You will be redirected to the main page in a few seconds...</p>
+    </div>
+    <script>
+      setTimeout(function() {
+        window.location.href = '{{ redirectUrl | default("/") }}';
+      }, {% if redirectDelay %}{{ redirectDelay * 1000 }}{% else %}3000{% endif %});
+    </script>
+    {% else %}
+    <p>Please enter your information to register the software</p>
+    
+    {% if error %}
+    <div class="error">
+      {{ error }}
+    </div>
+    {% endif %}
+    
+    <form id="registerForm">
+      <div class="input-group">
+        <label for="firstName">First Name</label>
+        <input type="text" id="firstName" name="firstName" value="{{ firstName }}" required>
+      </div>
+      <div class="input-group">
+        <label for="lastName">Last Name</label>
+        <input type="text" id="lastName" name="lastName" value="{{ lastName }}" required>
+      </div>
+      <div class="input-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" name="email" value="{{ email }}" required>
+      </div>
+      <div id="registrationError" class="error" style="display: none;"></div>
+      <button type="submit">Register Now</button>
+    </form>
+    {% endif %}
+    
+    <div class="powered-by">
+      Powered by Your Company Name
+    </div>
+  </div>
+</body>
+</html>

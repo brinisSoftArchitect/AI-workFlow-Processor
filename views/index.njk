@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Workflow Manager</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    .project-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      gap: 10px;
+    }
+    #projectName {
+      padding: 10px;
+      font-size: 18px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 250px;
+    }
+    .save-project-btn {
+      background-color: #673ab7;
+      padding: 10px 15px;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .save-project-btn:hover {
+      background-color: #5e35b1;
+    }
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: space-between;
+    }
+    .text-section {
+      flex: 1;
+      min-width: 45%;
+    }
+    textarea {
+      width: 100%;
+      height: 350px;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+      resize: vertical;
+      font-family: monospace;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    .error-section {
+      margin-top: 20px;
+    }
+    .error-textarea {
+      height: 250px;
+      background-color: #fff;
+      font-family: monospace;
+      white-space: pre;
+      overflow: auto;
+    }
+    .button-row {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+      gap: 10px;
+    }
+    button {
+      padding: 10px 15px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      flex: 1;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .copy-btn {
+      background-color: #2196F3;
+    }
+    .copy-btn:hover {
+      background-color: #0b7dda;
+    }
+    .process-btn {
+      background-color: #ff9800;
+    }
+    .process-btn:hover {
+      background-color: #e68a00;
+    }
+    .save-btn {
+      background-color: #9c27b0;
+    }
+    .save-btn:hover {
+      background-color: #7b1fa2;
+    }
+    .load-btn {
+      background-color: #607d8b;
+    }
+    .load-btn:hover {
+      background-color: #455a64;
+    }
+    .validate-btn {
+      background-color: #e91e63;
+    }
+    .validate-btn:hover {
+      background-color: #c2185b;
+    }
+    #executeBtn {
+      background-color: #f44336;
+    }
+    #executeBtn:hover {
+      background-color: #d32f2f;
+    }
+    #status {
+      text-align: center;
+      margin-top: 20px;
+      padding: 10px;
+      border-radius: 4px;
+      display: none;
+    }
+    .success {
+      background-color: #dff0d8;
+      color: #3c763d;
+      border: 1px solid #d6e9c6;
+      display: block !important;
+    }
+    .error {
+      background-color: #f2dede;
+      color: #a94442;
+      border: 1px solid #ebccd1;
+      display: block !important;
+    }
+    /* File buttons styles */
+    .file-buttons {
+      display: flex;
+      margin-bottom: 10px;
+      gap: 10px;
+    }
+    .file-buttons button {
+      padding: 8px 12px;
+      background-color: #6c5ce7;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      transition: background-color 0.2s;
+    }
+    .file-buttons button:hover {
+      background-color: #5541d8;
+    }
+    #showFilesBtn, #showContentsBtn {
+      display: inline-block !important;
+      visibility: visible !important;
+    }
+    /* License info styles */
+    .license-banner {
+      background-color: #f8f9fa;
+      border-radius: 6px;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-left: 4px solid #28a745;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .license-valid {
+      border-left: 4px solid #28a745;
+    }
+    .license-invalid, .license-expired {
+      border-left: 4px solid #dc3545;
+    }
+    .license-pending {
+      border-left: 4px solid #ffc107;
+    }
+    .license-banner p {
+      margin: 5px 0;
+    }
+    .license-banner strong {
+      font-weight: bold;
+    }
+    .expiry-warning {
+      color: #dc3545;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .usage-info {
+      margin-top: 5px;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <h1>AI Workflow Manager</h1>
+  
+  {% if licenseInfo %}
+  <div id="licenseInfo" class="license-banner">
+    <!-- License information will be populated by JavaScript -->
+  </div>
+  {% endif %}
+  
+  <div class="project-header">
+    <input type="text" id="projectName" placeholder="Enter project name...">
+    <button id="saveProjectBtn" class="save-project-btn">Save Project</button>
+  </div>
+  
+  <div class="container">
+    <div class="text-section">
+      <h2>Prompt Generator</h2>
+      <div class="file-buttons">
+        <button id="showFilesBtn">Show File Paths</button>
+        <button id="showContentsBtn">Show File Contents</button>
+      </div>
+      <textarea id="promptArea" placeholder="Enter text to generate a prompt or load a template..."></textarea>
+      <div class="button-row">
+        <button id="loadTemplateBtn" class="load-btn">Load Template</button>
+        <button id="loadJsonTemplateBtn" class="load-btn">Load JSON</button>
+        <button id="savePromptBtn" class="save-btn">Save Prompt</button>
+        <button id="copyPromptBtn" class="copy-btn">Copy Prompt</button>
+      </div>
+    </div>
+    
+    <div class="text-section">
+      <h2>AI Result Processor</h2>
+      <textarea id="resultArea" placeholder="Paste AI response here for processing..."></textarea>
+      <div class="button-row">
+        <button id="validateJsonBtn" class="validate-btn">Validate JSON</button>
+        <button id="saveResultBtn" class="save-btn">Save Result</button>
+        <button id="copyResultBtn" class="copy-btn">Copy Result</button>
+        <button id="executeBtn" class="process-btn">Execute Build</button>
+      </div>
+      
+      <div class="error-section">
+        <h3>Build Errors & Output</h3>
+        <textarea id="errorArea" class="error-textarea" placeholder="Errors and output will appear here..." readonly></textarea>
+        <div class="button-row">
+          <button id="copyErrorBtn" class="copy-btn">Copy Output</button>
+          <button id="loadErrorsBtn" class="load-btn">Load Error Logs</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div id="status"></div>
+  
+  <script src="/js/main.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

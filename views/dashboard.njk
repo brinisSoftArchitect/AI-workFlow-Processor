@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Workflow Manager - License Dashboard</title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .dashboard-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      margin-bottom: 30px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .header h1 {
+      margin: 0;
+      color: #333;
+      font-size: 24px;
+    }
+    .license-info {
+      margin-bottom: 20px;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    .license-active {
+      background-color: #e8f5e9;
+      border-left: 4px solid #4CAF50;
+    }
+    .license-pending {
+      background-color: #fff8e1;
+      border-left: 4px solid #FFC107;
+    }
+    .license-expired {
+      background-color: #ffebee;
+      border-left: 4px solid #F44336;
+    }
+    .license-info h2 {
+      margin-top: 0;
+      color: #333;
+      font-size: 20px;
+    }
+    .info-row {
+      display: flex;
+      margin-bottom: 10px;
+    }
+    .info-label {
+      font-weight: bold;
+      width: 150px;
+    }
+    .info-value {
+      flex: 1;
+    }
+    .license-key {
+      font-family: monospace;
+      padding: 10px;
+      background-color: #f0f0f0;
+      border: 1px dashed #999;
+      border-radius: 4px;
+      margin: 10px 0;
+      word-break: break-all;
+    }
+    .activations {
+      margin-top: 15px;
+    }
+    .activations h3 {
+      margin-top: 0;
+      color: #333;
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    .expiry-warning {
+      color: #F44336;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .usage-counter {
+      margin-top: 15px;
+      padding: 15px;
+      background-color: #e3f2fd;
+      border-radius: 4px;
+      border-left: 4px solid #2196F3;
+    }
+    .usage-bar {
+      height: 8px;
+      background-color: #ddd;
+      border-radius: 4px;
+      margin-top: 5px;
+      overflow: hidden;
+    }
+    .usage-progress {
+      height: 100%;
+      background-color: #2196F3;
+    }
+    .usage-text {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 5px;
+      font-size: 14px;
+    }
+    /* Original styles integrated from index.njk */
+    .project-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      gap: 10px;
+    }
+    #projectName {
+      padding: 10px;
+      font-size: 18px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 250px;
+    }
+    .save-project-btn {
+      background-color: #673ab7;
+      padding: 10px 15px;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .save-project-btn:hover {
+      background-color: #5e35b1;
+    }
+  </style>
+</head>
+<body>
+  <h1>AI Workflow Manager</h1>
+  
+  <div class="dashboard-container">
+    <div class="header">
+      <h1>License Dashboard</h1>
+      <p>Welcome, {{ license.firstName }} {{ license.lastName }}</p>
+    </div>
+    
+    <div class="license-info license-{{ license.status }}">
+      <h2>License Information</h2>
+      
+      <div class="info-row">
+        <div class="info-label">Status:</div>
+        <div class="info-value">
+          {% if license.status == 'active' %}
+            <strong style="color: #4CAF50;">Active</strong>
+          {% elif license.status == 'pending' %}
+            <strong style="color: #FFC107;">Pending Approval</strong>
+          {% elif license.status == 'expired' %}
+            <strong style="color: #F44336;">Expired</strong>
+          {% elif license.status == 'suspended' %}
+            <strong style="color: #F44336;">Suspended</strong>
+          {% else %}
+            <strong>{{ license.status }}</strong>
+          {% endif %}
+        </div>
+      </div>
+      
+      <div class="info-row">
+        <div class="info-label">License Key:</div>
+        <div class="info-value">
+          <div class="license-key">{{ license.licenseKey }}</div>
+        </div>
+      </div>
+      
+      <div class="info-row">
+        <div class="info-label">Plan:</div>
+        <div class="info-value">
+          {% if license.plan == 'trial' %}
+            Trial Version
+          {% elif license.plan == 'basic' %}
+            Basic Plan
+          {% elif license.plan == 'pro' %}
+            Professional Plan
+          {% elif license.plan == 'enterprise' %}
+            Enterprise Plan
+          {% else %}
+            {{ license.plan }}
+          {% endif %}
+        </div>
+      </div>
+      
+      <div class="info-row">
+        <div class="info-label">Registered Email:</div>
+        <div class="info-value">{{ license.email }}</div>
+      </div>
+      
+      <div class="info-row">
+        <div class="info-label">Created Date:</div>
+        <div class="info-value">{{ license.createdAt | slice(0, 10) }}</div>
+      </div>
+      
+      <div class="info-row">
+        <div class="info-label">Expiration Date:</div>
+        <div class="info-value">{{ license.expiresAt | slice(0, 10) }}</div>
+      </div>
+      
+      {% if license.plan == 'trial' and usageInfo %}
+      <div class="usage-counter">
+        <strong>Trial Usage:</strong> {{ usageInfo.usageCount }} of {{ usageInfo.maxUsage }} activations used
+        <div class="usage-bar">
+          <div class="usage-progress" style="width: {{ (usageInfo.usageCount / usageInfo.maxUsage * 100) }}%"></div>
+        </div>
+        <div class="usage-text">
+          <span>0</span>
+          <span>{{ usageInfo.maxUsage }}</span>
+        </div>
+      </div>
+      {% endif %}
+      
+      {% if daysUntilExpiry <= 7 and license.status == 'active' %}
+      <div class="expiry-warning">
+        Your license will expire in {{ daysUntilExpiry }} day{% if daysUntilExpiry != 1 %}s{% endif %}. Please consider renewing soon.
+      </div>
+      {% endif %}
+      
+      {% if license.status == 'pending' %}
+      <div style="margin-top: 15px; font-style: italic;">
+        Your license is awaiting administrator approval. You will receive an email once it's approved.
+      </div>
+      {% endif %}
+      
+      <div class="activations">
+        <h3>Current Activations</h3>
+        
+        {% if activations and activations.length > 0 %}
+        <table>
+          <thead>
+            <tr>
+              <th>Device</th>
+              <th>Activated Date</th>
+              <th>Last Verified</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for activation in activations %}
+            <tr>
+              <td>{{ activation.deviceName or 'Device ' + loop.index }}</td>
+              <td>{{ activation.activatedAt | slice(0, 10) }}</td>
+              <td>{{ activation.lastVerifiedAt | slice(0, 10) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p>No active devices found.</p>
+        {% endif %}
+      </div>
+      
+      {% if license.status == 'expired' %}
+      <div style="margin-top: 15px;">
+        <a href="/renew" class="btn" style="background-color: #4CAF50; color: white; padding: 10px 15px; border-radius: 4px; text-decoration: none;">Renew License</a>
+      </div>
+      {% endif %}
