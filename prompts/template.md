@@ -18,7 +18,7 @@ The response should be operational JSON with the following structure:
 }
 and contain only the files to create or modify, means what to change.
 Important: The response should only contain this JSON structure with no additional comments before or after. Each file should include its path as a comment at the beginning. Keep files under 200 lines for better maintainability.
-
+give maximun 5 files per json , cause they may be incomplete in same response you send.
 ## Additional Notes
 all responses in this chat should be in the json structure given.
 give only the files needed to be changed, not all the files in the project.
